@@ -27,19 +27,9 @@ retail-inventory-platform/
 │   ├── api/
 │   ├── core/
 │   ├── database/
-│   ├── models/
-│   ├── schemas/
-│   ├── services/
-│   ├── repositories/
-│   ├── integrations/
-│   │   └── clover/
-│   ├── utils/
 │   └── main.py
 ├── alembic/
 ├── tests/
-├── scripts/
-├── data/
-├── docs/
 ├── docker-compose.yml
 ├── requirements.txt
 ├── .env.example
@@ -47,18 +37,33 @@ retail-inventory-platform/
 └── README.md
 ```
 
-## Architecture Overview
+## Architecture Overview (Sprint 1)
 
-The scaffold follows layered backend structure aligned with clean architecture principles:
+The scaffold keeps only layers that already execute in the current sprint:
 
 - **API layer (`app/api`)**: HTTP routes and request handling.
-- **Service layer (`app/services`)**: Business orchestration (to be added later).
-- **Repository layer (`app/repositories`)**: Data access abstractions.
-- **Model layer (`app/models`)**: SQLAlchemy ORM models.
-- **Schema layer (`app/schemas`)**: Request/response contracts.
-- **Integration layer (`app/integrations`)**: External systems like Clover POS.
 - **Core (`app/core`)**: Configuration and cross-cutting app settings.
 - **Database (`app/database`)**: Engine, session, and ORM base definitions.
+
+Additional layers (`models`, `schemas`, `services`, `repositories`, `integrations`, `utils`) will be introduced when the first feature needs them.
+
+## Structure Decisions (Keep / Remove / Merge)
+
+This project follows iterative development: keep what is active now, add only when needed.
+
+- **Kept `app/api/`**: already provides active behavior (`GET /health`) and route composition.
+- **Kept `app/core/`**: isolates environment/config concerns from web/database code.
+- **Kept `app/database/`**: SQLAlchemy base/session are immediately used and deserve clear separation.
+- **Kept `alembic/` + `alembic.ini`**: migrations are part of production readiness from day one.
+- **Kept `tests/`**: verifies baseline app behavior and protects future refactors.
+- **Removed `app/models/`**: was an empty placeholder; no ORM entities exist yet.
+- **Removed `app/schemas/`**: no request/response DTOs beyond inline health response yet.
+- **Removed `app/services/`**: no business orchestration exists in sprint 1.
+- **Removed `app/repositories/`**: no concrete persistence abstraction implemented yet.
+- **Removed `app/integrations/clover/`**: Clover integration is planned, but no near-term code shipped yet.
+- **Removed `app/utils/`**: no shared helpers exist yet; avoids catch-all dumping ground early.
+- **Removed top-level `scripts/`, `data/`, `docs/`**: each contained only `.gitkeep`; no current runtime, tests, or delivery value.
+- **Merge decision (`core` + `database`)**: intentionally **not merged**. They each contain active multi-file responsibilities; combining now would reduce clarity without reducing meaningful complexity.
 
 ## Setup
 
@@ -124,19 +129,11 @@ pytest
 - `app/core/config.py`: Environment-driven app settings loaded from `.env`.
 - `app/database/base.py`: Shared SQLAlchemy declarative base.
 - `app/database/session.py`: SQLAlchemy engine/session setup and DB dependency.
-- `app/models/__init__.py`: Placeholder package for ORM entities.
-- `app/schemas/__init__.py`: Placeholder package for Pydantic schemas.
-- `app/services/__init__.py`: Placeholder package for domain/application services.
-- `app/repositories/__init__.py`: Placeholder package for persistence repositories.
-- `app/integrations/clover/__init__.py`: Placeholder package for Clover integration code.
-- `app/utils/__init__.py`: Placeholder package for shared utilities.
 - `alembic.ini`: Alembic runtime configuration.
 - `alembic/env.py`: Alembic migration environment and metadata wiring.
 - `alembic/script.py.mako`: Template used for generating migration scripts.
-- `alembic/versions/`: Generated migration revisions live here.
 - `docker-compose.yml`: Local PostgreSQL service configuration with healthcheck.
 - `requirements.txt`: Python dependency manifest.
 - `.env.example`: Template for required environment variables.
 - `.gitignore`: Excludes environment files, caches, build artifacts, and logs.
 - `tests/test_health.py`: Baseline endpoint test using FastAPI TestClient.
-- `scripts/`, `data/`, `docs/`: Reserved directories for automation, sample/local data, and project docs.
