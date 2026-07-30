@@ -27,6 +27,7 @@ retail-inventory-platform/
 │   ├── api/
 │   ├── core/
 │   ├── database/
+│   ├── models/
 │   └── main.py
 ├── alembic/
 ├── tests/
@@ -44,6 +45,7 @@ The scaffold keeps only layers that already execute in the current sprint:
 - **API layer (`app/api`)**: HTTP routes and request handling.
 - **Core (`app/core`)**: Configuration and cross-cutting app settings.
 - **Database (`app/database`)**: Engine, session, and ORM base definitions.
+- **Models (`app/models`)**: SQLAlchemy entities for active catalog data.
 
 Additional layers (`models`, `schemas`, `services`, `repositories`, `integrations`, `utils`) will be introduced when the first feature needs them.
 
@@ -56,7 +58,6 @@ This project follows iterative development: keep what is active now, add only wh
 - **Kept `app/database/`**: SQLAlchemy base/session are immediately used and deserve clear separation.
 - **Kept `alembic/` + `alembic.ini`**: migrations are part of production readiness from day one.
 - **Kept `tests/`**: verifies baseline app behavior and protects future refactors.
-- **Removed `app/models/`**: was an empty placeholder; no ORM entities exist yet.
 - **Removed `app/schemas/`**: no request/response DTOs beyond inline health response yet.
 - **Removed `app/services/`**: no business orchestration exists in sprint 1.
 - **Removed `app/repositories/`**: no concrete persistence abstraction implemented yet.
@@ -113,6 +114,21 @@ Apply migrations:
 alembic upgrade head
 ```
 
+## Product Catalog Schema (v1)
+
+The first catalog entity is `products`:
+
+- `id` (integer, primary key)
+- `upc` (string, required, unique, indexed)
+- `name` (string, required)
+- `category` (string, required; examples: Beer, Wine)
+- `package_count` (integer, nullable; examples: 6, 12, 24)
+- `unit_size` (numeric, nullable; examples: 12, 16.9, 750)
+- `unit_of_measure` (string, nullable; examples: fl oz, ml)
+- `distributor` (string, nullable)
+- `created_at` (timestamp)
+- `updated_at` (timestamp)
+
 ## Testing
 
 Run tests with:
@@ -129,9 +145,12 @@ pytest
 - `app/core/config.py`: Environment-driven app settings loaded from `.env`.
 - `app/database/base.py`: Shared SQLAlchemy declarative base.
 - `app/database/session.py`: SQLAlchemy engine/session setup and DB dependency.
+- `app/models/product.py`: Product ORM model and column constraints.
+- `app/models/__init__.py`: Model exports for package-level imports.
 - `alembic.ini`: Alembic runtime configuration.
 - `alembic/env.py`: Alembic migration environment and metadata wiring.
 - `alembic/script.py.mako`: Template used for generating migration scripts.
+- `alembic/versions/`: Alembic migration history.
 - `docker-compose.yml`: Local PostgreSQL service configuration with healthcheck.
 - `requirements.txt`: Python dependency manifest.
 - `.env.example`: Template for required environment variables.
