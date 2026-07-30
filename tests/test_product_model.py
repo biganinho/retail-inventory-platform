@@ -17,7 +17,7 @@ def db_session() -> Session:
 
 
 def test_product_upc_preserves_leading_zeros(db_session: Session) -> None:
-    product = Product(upc="001234567890", name="Sample Lager", category="Beer")
+    product = Product(upc="001234567890", name="Sample Lager", brand="Acme", category="Beer")
     db_session.add(product)
     db_session.commit()
     db_session.refresh(product)
@@ -25,9 +25,14 @@ def test_product_upc_preserves_leading_zeros(db_session: Session) -> None:
     assert product.upc == "001234567890"
 
 
-@pytest.mark.parametrize("field", ["upc", "name", "category"])
+@pytest.mark.parametrize("field", ["upc", "name", "brand", "category"])
 def test_product_required_fields_are_not_nullable(db_session: Session, field: str) -> None:
-    payload = {"upc": "123456789012", "name": "Sample Wine", "category": "Wine"}
+    payload = {
+        "upc": "123456789012",
+        "name": "Sample Wine",
+        "brand": "Acme",
+        "category": "Wine",
+    }
     payload[field] = None
 
     db_session.add(Product(**payload))
@@ -37,8 +42,8 @@ def test_product_required_fields_are_not_nullable(db_session: Session, field: st
 
 
 def test_product_upc_must_be_unique(db_session: Session) -> None:
-    first = Product(upc="777777777777", name="First Product", category="Beer")
-    second = Product(upc="777777777777", name="Second Product", category="Wine")
+    first = Product(upc="777777777777", name="First Product", brand="Acme", category="Beer")
+    second = Product(upc="777777777777", name="Second Product", brand="Acme", category="Wine")
 
     db_session.add(first)
     db_session.commit()
@@ -46,3 +51,40 @@ def test_product_upc_must_be_unique(db_session: Session) -> None:
 
     with pytest.raises(IntegrityError):
         db_session.commit()
+
+
+def test_product_nullable_fields_accept_null(db_session: Session) -> None:
+    product = Product(
+        upc="888888888888",
+        name="Nullables Product",
+        brand="Acme",
+        category="Beer",
+        package_count=None,
+        unit_size=None,
+        unit_of_measure=None,
+        container_type=None,
+        barcode_level=None,
+        notes=None,
+    )
+
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+
+    assert product.package_count is None
+    assert product.unit_size is None
+    assert product.unit_of_measure is None
+    assert product.container_type is None
+    assert product.barcode_level is None
+    assert product.notes is None
+
+
+def test_product_timestamps_are_set(db_session: Session) -> None:
+    product = Product(upc="999999999999", name="Timestamp Product", brand="Acme", category="Beer")
+
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+
+    assert product.created_at is not None
+    assert product.updated_at is not None
