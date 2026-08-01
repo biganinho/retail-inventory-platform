@@ -20,14 +20,14 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     with op.batch_alter_table("products") as batch_op:
         batch_op.add_column(sa.Column("brand", sa.String(length=255), nullable=True))
-        batch_op.add_column(sa.Column("container_type", sa.String(length=100), nullable=True))
-        batch_op.add_column(sa.Column("barcode_level", sa.String(length=100), nullable=True))
-        batch_op.add_column(sa.Column("notes", sa.Text(), nullable=True))
 
     op.execute("UPDATE products SET brand = 'Unknown' WHERE brand IS NULL")
 
     with op.batch_alter_table("products") as batch_op:
         batch_op.alter_column("brand", existing_type=sa.String(length=255), nullable=False)
+        batch_op.add_column(sa.Column("container_type", sa.String(length=100), nullable=True))
+        batch_op.add_column(sa.Column("barcode_level", sa.String(length=100), nullable=True))
+        batch_op.add_column(sa.Column("notes", sa.Text(), nullable=True))
         batch_op.drop_column("distributor")
 
 
